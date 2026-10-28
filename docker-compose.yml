@@ -4,9 +4,9 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-pulsealert_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-pulsealert_dev}
-      POSTGRES_DB: ${DB_NAME:-pulsealert_db}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5433:5432"
     volumes:
@@ -26,10 +26,10 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_USER: ${DB_USER:-pulsealert_user}
-      DB_PASSWORD: ${DB_PASSWORD:-pulsealert_dev}
-      DB_NAME: ${DB_NAME:-pulsealert_db}
-      SECRET_KEY: ${SECRET_KEY:-solo-para-desarrollo}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
     depends_on:
       db:
         condition: service_healthy

@@ -218,3 +218,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# React / Node
+node_modules/
+frontend/dist/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Configuración local
+.vscode/
