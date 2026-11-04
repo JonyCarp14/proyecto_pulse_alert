@@ -14,3 +14,8 @@ class Alert(Base):
     mensaje: Mapped[str] = mapped_column(String(255), nullable=False)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True),default=lambda: datetime.now(timezone.utc))
     leida: Mapped[bool] = mapped_column(Boolean, default=False)
+    metrica: Mapped[str] = mapped_column(String(50), nullable=False)
+    valor_detectado: Mapped[float] = mapped_column(Float, nullable=False)
+    limite: Mapped[float] = mapped_column(Float, nullable=False)
+    estado_envio: Mapped[str] = mapped_column(String(20), default="pendiente", nullable=False)
+    regla_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
