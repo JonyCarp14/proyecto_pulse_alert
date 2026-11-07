@@ -4,6 +4,7 @@ from app.models.user import User
 from app.schemas.user import UserCreate
 from app.repositories.user_repository import get_user_by_email, create_user
 from app.security.password import hash_password, verify_password
+from app.security.jwt import create_access_token
 
 
 def register_user(db: Session, user_data: UserCreate):
@@ -39,5 +40,13 @@ def login_user(db: Session, email: str, password: str):
     if not verify_password(password, user.password_hash):
         raise ValueError("Credenciales inválidas")
 
-    # Si todo es correcto, devolvemos el usuario.
-    return user
+    # Generamos un token JWT con el identificador del usuario.
+    access_token = create_access_token(
+        data={"sub": str(user.id_user)}
+    )
+
+    # Devolvemos el token para que el cliente pueda utilizarlo.
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
