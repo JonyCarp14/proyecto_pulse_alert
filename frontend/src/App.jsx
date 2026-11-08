@@ -1,11 +1,12 @@
 import React from 'react';
+import Alerts from './pages/Alerts.jsx';
 function App() {
     return (
         <main>
-            <h1>PulseAlert</h1>
-            <p>Monitoreo de campañas publicitarias y alertas de marketing.</p>
+            <Alerts />
         </main>
     );
 }
+
 
 export default App;
