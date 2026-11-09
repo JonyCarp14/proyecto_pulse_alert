@@ -22,7 +22,9 @@ def register_user(db: Session, user_data: UserCreate):
         nombre=user_data.nombre,
         apellido=user_data.apellido,
         email=user_data.email,
-        password_hash=hashed_password
+        password_hash=hashed_password,
+        rol="user",
+        plan="free"
     )
 
     # Guardamos el usuario utilizando el repositorio.
