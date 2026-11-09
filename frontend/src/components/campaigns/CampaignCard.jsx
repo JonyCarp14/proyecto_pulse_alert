@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
     Box,
@@ -14,20 +13,51 @@ import {
     ExpandMore,
     ExpandLess,
 } from '@mui/icons-material';
-import { alerts } from '../../data/dashboardData';
+
+import { useAlerts } from '../../context/AlertsContext';
+import { useCampaigns } from '../../context/CampaignsContext';
+import { generateAlert } from '../../services/alertService';
 import EventSimulator from './EventSimulator';
 
 function CampaignCard({ campaign }) {
     const [expanded, setExpanded] = useState(false);
 
+    const { alerts, addAlert } = useAlerts();
+    const { updateCampaignStatus } = useCampaigns();
+
     const budgetPercentage = campaign.budget > 0
         ? Math.min((campaign.investment / campaign.budget) * 100, 100)
         : 0;
 
-    const isActive = campaign.status === 'active';
+    const statusConfig = {
+        active: { label: 'Activa', color: 'success' },
+        paused: { label: 'Pausada', color: 'warning' },
+        down: { label: 'Caída', color: 'error' },
+    };
+
+    const currentStatus = statusConfig[campaign.status] || statusConfig.active;
+
     const campaignAlerts = alerts.filter(
-        alert => alert.campaign === campaign.name
+        alert =>
+            alert.campaignId === campaign.id ||
+            alert.campaign === campaign.name
     );
+
+    const handleSimulate = (campaignId, eventType) => {
+        if (campaignId !== campaign.id) return;
+
+        const newAlert = generateAlert(campaign, eventType);
+
+        addAlert(newAlert);
+
+        if (eventType === 'down') {
+            updateCampaignStatus(campaignId, 'down');
+        }
+
+        if (eventType === 'paused') {
+            updateCampaignStatus(campaignId, 'paused');
+        }
+    };
 
     return (
         <Card
@@ -50,9 +80,9 @@ function CampaignCard({ campaign }) {
                     </Box>
 
                     <Chip
-                        label={isActive ? 'Activa' : 'Pausada'}
+                        label={currentStatus.label}
                         size="small"
-                        color={isActive ? 'success' : 'warning'}
+                        color={currentStatus.color}
                     />
                 </Box>
 
@@ -140,6 +170,7 @@ function CampaignCard({ campaign }) {
                             </Box>
                         </Box>
                     </Box>
+
                     {/* Alertas asociadas */}
                     <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #263244' }}>
                         <Typography variant="subtitle1" fontWeight="bold" mb={2}>
@@ -196,7 +227,11 @@ function CampaignCard({ campaign }) {
                             </Typography>
                         )}
                     </Box>
-                    <EventSimulator campaign={campaign} />
+
+                    <EventSimulator
+                        campaign={campaign}
+                        onSimulate={handleSimulate}
+                    />
                 </Collapse>
             </CardContent>
         </Card>

@@ -7,10 +7,11 @@ import {
     AttachMoneyOutlined,
 } from '@mui/icons-material';
 
-import { campaigns } from '../../data/dashboardData';
+import { useCampaigns } from '../../context/CampaignsContext';
 import CampaignCard from '../../components/campaigns/CampaignCard';
 
 function Campaigns() {
+    const { campaigns } = useCampaigns();
     const stats = [
         {
             title: 'Total de campañas',
