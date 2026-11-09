@@ -3,8 +3,10 @@ import { Card, CardContent, Stack, Typography, Chip } from "@mui/material";
 import TelegramIcon from "@mui/icons-material/Telegram";
 
 
-const colorPrioridad = { alta: "error", media: "warning", baja: "secondary" };
 const colorTelegram = { enviando: "default", enviado: "success", fallido: "error" };
+const colorPrioridad = { critical: "error", medium: "warning", info: "secondary" };
+const nombrePrioridad = { critical: "Crítica", medium: "Media", info: "Informativa" };
+
 export default function TarjetaAlerta({ alerta }) {
 
   // convierte la fecha en texto 
@@ -40,7 +42,7 @@ export default function TarjetaAlerta({ alerta }) {
 
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              label={alerta.priority.toUpperCase()}
+              label={nombrePrioridad[alerta.priority]}
               color={colorPrioridad[alerta.priority]}
               size="small"
             />
@@ -52,7 +54,7 @@ export default function TarjetaAlerta({ alerta }) {
           <Typography variant="body1">{alerta.message}</Typography>
 
           <Typography variant="body2" color="text.secondary">
-            Valor detectado: {alerta.value} · Límite: {alerta.limit}
+            <Typography sx={{ fontWeight: 700 }}>{alerta.titulo}</Typography>
           </Typography>
 
           <Stack direction="row" spacing={1} alignItems="center">

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Stack, Button, Paper, TextField, MenuItem, Typography, ToggleButtonGroup, ToggleButton } from "@mui/material";
+import { Stack, Button, Paper, TextField, MenuItem, Typography, ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { alertas as alertasIniciales } from "../mocks/alerts";
 import TarjetaAlerta from "../components/alerts/TarjetaAlerta";
+import { eventos } from "../mocks/eventos";
 
 
 export default function Alerts() {
@@ -11,20 +12,24 @@ export default function Alerts() {
   const [enviando, setEnviando] = useState(false);
   const [campaniaElegida, setCampaniaElegida] = useState(alertasIniciales[0].id);
   const [filtro, setFiltro] = useState("todas");
+  const [eventoElegido, setEventoElegido] = useState(eventos[0].id);
+
 
   const simularDisparo = () => {
 
     const base = alertasIniciales.find((c) => c.id === campaniaElegida);
-
+    const evento = eventos.find((e) => e.id === eventoElegido);
 
     const nueva = {
       ...base,
       id: Date.now(),
       created_at: new Date().toISOString(),
+      titulo: evento.titulo,
+      priority: evento.prioridad,
+      message: evento.mensaje(base),
       status: "nueva",
       telegram_status: "enviando",
     };
-
 
     setEnviando(true);
     setEnviadas((prev) => [nueva, ...prev]);
@@ -45,64 +50,103 @@ export default function Alerts() {
 
 
   return (
-    <Stack spacing={2} sx={{ p: 3 }}>
+    <Stack spacing={3}>
 
-      <Paper sx={{ p: 3, borderRadius: 4 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Simular evento
+      <Box>
+        <Typography variant="h4" fontWeight="bold">
+          Alertas
         </Typography>
+        <Typography color="text.secondary">
+          Simula y visualiza alertas de campañas.
+        </Typography>
+      </Box>
 
+      {/* Panel para simular un evento: elegir evento y campaña, y disparar */}
+      <Paper sx={{ p: 3, borderRadius: 4, backgroundImage: "none" }}>
+        <Stack spacing={3}>
+          {/* Fila de arriba: título a la izquierda, botón a la derecha */}
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Simular evento
+            </Typography>
 
+            <Button
+              variant="contained"
+              startIcon={<BoltIcon />}
+              onClick={simularDisparo}
+              disabled={enviando}
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 700 }}
+            >
+              Simular
+            </Button>
+          </Stack>
 
-        <Stack direction="row" spacing={2} alignItems="center">
-          <TextField
-            select
-            label="Campaña"
-            value={campaniaElegida}
-            onChange={(e) => setCampaniaElegida(e.target.value)}
-            sx={{ flexGrow: 1 }}
-          >
-            {alertasIniciales.map((campania) => (
-              <MenuItem key={campania.id} value={campania.id}>
-                {campania.campaign_name}
-              </MenuItem>
-            ))}
-          </TextField>
+          {/* Fila de abajo: los dos desplegables, uno al lado del otro */}
+          <Stack spacing={2}>
+            <TextField
+              select
+              label="Evento"
+              value={eventoElegido}
+              onChange={(e) => setEventoElegido(e.target.value)}
+              fullWidth
+            >
+              {eventos.map((ev) => (
+                <MenuItem key={ev.id} value={ev.id}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    {ev.icono}
+                    <Stack>
+                      <Typography sx={{ fontWeight: 700 }}>{ev.titulo}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {ev.descripcion}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <Button
-            variant="contained"
-            startIcon={<BoltIcon />}
-            onClick={simularDisparo}
-            disabled={enviando}
-            sx={{ borderRadius: 5 }}
-          >
-            Simular
-          </Button>
+            <TextField
+              select
+              label="Campaña"
+              value={campaniaElegida}
+              onChange={(e) => setCampaniaElegida(e.target.value)}
+              fullWidth
+            >
+              {alertasIniciales.map((campania) => (
+                <MenuItem key={campania.id} value={campania.id}>
+                  {campania.campaign_name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
         </Stack>
       </Paper>
 
 
-  
+
       <Paper sx={{ p: 3, borderRadius: 4, backgroundImage: "none" }}>
         <Stack spacing={2}>
-         
+
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Alertas enviadas</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Alertas enviadas
+            </Typography>
 
             <ToggleButtonGroup
               size="small"
               exclusive
               value={filtro}
               onChange={(e, nuevo) => nuevo && setFiltro(nuevo)}
+              sx={{ "& .MuiToggleButton-root": { textTransform: "none" } }}
             >
               <ToggleButton value="todas">Todas</ToggleButton>
-              <ToggleButton value="alta">Alta</ToggleButton>
-              <ToggleButton value="media">Media</ToggleButton>
-              <ToggleButton value="baja">Baja</ToggleButton>
+              <ToggleButton value="critical">Crítica</ToggleButton>
+              <ToggleButton value="medium">Media</ToggleButton>
+              <ToggleButton value="info">Informativa</ToggleButton>
             </ToggleButtonGroup>
           </Stack>
 
-         
+
           {filtradas.length === 0 ? (
             <Typography color="text.secondary">
               No hay alertas para mostrar

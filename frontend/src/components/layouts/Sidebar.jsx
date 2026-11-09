@@ -18,7 +18,7 @@ import { NavLink } from 'react-router-dom';
 const menuItems = [
     { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/dashboard' },
     { text: 'Campañas', icon: <CampaignOutlinedIcon />, path: '/campaigns' },
-    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon /> },
+    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon />, path: '/alerts' },
     { text: 'Reportes', icon: <AssessmentOutlinedIcon /> },
     { text: 'Usuarios', icon: <PeopleOutlineIcon /> },
 ];
