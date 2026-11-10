@@ -2,9 +2,4 @@ fastapi
 uvicorn[standard]
 psycopg[binary]
 python-dotenv
-<<<<<<< HEAD
 reportlab
-=======
-alembic
-pwdlib[argon2]
->>>>>>> 3ed6d5d33b4a6b3cab83e27f615fce7a93155710
