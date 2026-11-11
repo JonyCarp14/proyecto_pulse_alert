@@ -1,4 +1,3 @@
-
 import {
     Box,
     Typography,
@@ -16,7 +15,7 @@ import {
     InfoOutlined,
 } from '@mui/icons-material';
 
-import { alerts } from '../../data/dashboardData';
+import { useAlerts } from '../../context/AlertsContext';
 
 const severityConfig = {
     critical: {
@@ -37,6 +36,7 @@ const severityConfig = {
 };
 
 function RecentAlerts() {
+    const { alerts } = useAlerts();
     return (
         <Box
             sx={{

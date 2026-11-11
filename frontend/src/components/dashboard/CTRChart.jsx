@@ -1,4 +1,5 @@
 
+
 import {
     ResponsiveContainer,
     BarChart,
@@ -10,9 +11,34 @@ import {
 } from 'recharts';
 
 import { Box, Typography } from '@mui/material';
-import { ctrByPlatform } from '../../data/dashboardData';
+import { useCampaigns } from '../../context/CampaignsContext';
 
 function CTRChart() {
+    const { campaigns } = useCampaigns();
+
+    // Agrupar impresiones y clics por plataforma
+    const ctrByPlatform = Object.values(
+        campaigns.reduce((result, campaign) => {
+            if (!result[campaign.platform]) {
+                result[campaign.platform] = {
+                    platform: campaign.platform,
+                    impressions: 0,
+                    clicks: 0,
+                };
+            }
+
+            result[campaign.platform].impressions += campaign.impressions;
+            result[campaign.platform].clicks += campaign.clicks;
+
+            return result;
+        }, {})
+    ).map(platform => ({
+        ...platform,
+        ctr: platform.impressions > 0
+            ? Number(((platform.clicks / platform.impressions) * 100).toFixed(2))
+            : 0,
+    }));
+
     return (
         <Box
             sx={{
@@ -77,3 +103,4 @@ function CTRChart() {
 }
 
 export default CTRChart;
+

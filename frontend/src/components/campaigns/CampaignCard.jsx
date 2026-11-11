@@ -23,11 +23,21 @@ function CampaignCard({ campaign }) {
     const [expanded, setExpanded] = useState(false);
 
     const { alerts, addAlert } = useAlerts();
-    const { updateCampaignStatus } = useCampaigns();
+    const { updateCampaignStatus, updateCampaignInvestment } = useCampaigns();
 
     const budgetPercentage = campaign.budget > 0
-        ? Math.min((campaign.investment / campaign.budget) * 100, 100)
+        ? (campaign.investment / campaign.budget) * 100
         : 0;
+
+    const progressPercentage = Math.min(budgetPercentage, 100);
+
+    const progressColor = budgetPercentage > 100
+        ? '#EF4444'
+        : budgetPercentage >= 90
+            ? '#F59E0B'
+            : '#2563EB';
+
+    const exceededAmount = Math.max(campaign.investment - campaign.budget, 0);
 
     const statusConfig = {
         active: { label: 'Activa', color: 'success' },
@@ -46,9 +56,24 @@ function CampaignCard({ campaign }) {
     const handleSimulate = (campaignId, eventType) => {
         if (campaignId !== campaign.id) return;
 
+        if (
+            (eventType === 'budgetCritical' || eventType === 'budgetExceeded') &&
+            campaign.budget <= 0
+        ) {
+            return;
+        }
+
         const newAlert = generateAlert(campaign, eventType);
 
         addAlert(newAlert);
+
+        if (eventType === 'budgetCritical') {
+            updateCampaignInvestment(campaignId, campaign.budget * 0.9);
+        }
+
+        if (eventType === 'budgetExceeded') {
+            updateCampaignInvestment(campaignId, campaign.budget * 1.1);
+        }
 
         if (eventType === 'down') {
             updateCampaignStatus(campaignId, 'down');
@@ -97,24 +122,64 @@ function CampaignCard({ campaign }) {
 
                 <LinearProgress
                     variant="determinate"
-                    value={budgetPercentage}
+                    value={progressPercentage}
                     sx={{
                         height: 7,
                         borderRadius: 5,
                         backgroundColor: '#263244',
                         '& .MuiLinearProgress-bar': {
-                            backgroundColor: budgetPercentage >= 90 ? '#EF4444' : '#2563EB',
+                            backgroundColor: progressColor,
                             borderRadius: 5,
                         },
                     }}
                 />
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Box sx={{ mt: 1 }}>
+                    {campaign.budget <= 0 ? (
+                        <Typography variant="caption" color="text.secondary">
+                            Presupuesto no disponible
+                        </Typography>
+                    ) : budgetPercentage > 100 ? (
+                        <Typography variant="caption" color="error.main">
+                            Presupuesto excedido en ${exceededAmount.toLocaleString('es-AR')}
+                            {' '}({budgetPercentage.toFixed(1)}% utilizado)
+                        </Typography>
+                    ) : (
+                        <Typography
+                            variant="caption"
+                            color={budgetPercentage >= 90 ? 'warning.main' : 'text.secondary'}
+                        >
+                            {budgetPercentage.toFixed(1)}% del presupuesto utilizado
+                        </Typography>
+                    )}
+                </Box>
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mt: 2,
+                        gap: 2,
+                    }}
+                >
+                    {campaign.status !== 'active' && (
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            onClick={() => updateCampaignStatus(campaign.id, 'active')}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Reactivar campaña
+                        </Button>
+                    )}
+
                     <Button
                         size="small"
                         onClick={() => setExpanded(!expanded)}
                         endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
-                        sx={{ textTransform: 'none' }}
+                        sx={{ textTransform: 'none', ml: 'auto' }}
                     >
                         {expanded ? 'Ocultar detalle' : 'Ver detalle'}
                     </Button>
@@ -165,7 +230,7 @@ function CampaignCard({ campaign }) {
                                     Presupuesto utilizado
                                 </Typography>
                                 <Typography fontWeight="bold">
-                                    {budgetPercentage.toFixed(1)}%
+                                    {campaign.budget > 0 ? `${budgetPercentage.toFixed(1)}%` : 'N/D'}
                                 </Typography>
                             </Box>
                         </Box>

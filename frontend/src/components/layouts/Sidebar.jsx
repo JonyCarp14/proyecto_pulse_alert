@@ -14,16 +14,18 @@ import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsAc
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const menuItems = [
-    { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/dashboard' },
-    { text: 'Campañas', icon: <CampaignOutlinedIcon />, path: '/campaigns' },
-    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon /> },
-    { text: 'Reportes', icon: <AssessmentOutlinedIcon /> },
-    { text: 'Usuarios', icon: <PeopleOutlineIcon /> },
+    { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/dashboard', roles: ['user'] },
+    { text: 'Campañas', icon: <CampaignOutlinedIcon />, path: '/campaigns', roles: ['user'] },
+    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon />, roles: ['user'] },
+    { text: 'Reportes', icon: <AssessmentOutlinedIcon />, roles: ['user'] },
+    { text: 'Usuarios', icon: <PeopleOutlineIcon />, path: '/users', roles: ['admin'] },
 ];
 
 function Sidebar() {
+    const { user } = useAuth();
     return (
         <Drawer
             variant="permanent"
@@ -105,38 +107,40 @@ function Sidebar() {
             </Box>
 
             <List sx={{ mt: 2 }}>
-                {menuItems.map((item) => (
-                    <ListItemButton
-                        key={item.text}
-                        component={item.path ? NavLink : 'div'}
-                        {...(item.path ? { to: item.path, end: true } : {})}
-                        disabled={!item.path}
-                        sx={{
-                            borderRadius: 2,
-                            mb: 1,
-                            color: '#F8FAFC',
-                            textDecoration: 'none',
-                            '&:hover': {
-                                backgroundColor: '#1E293B',
-                            },
-                            '&.active': {
-                                backgroundColor: '#1E3A5F',
-                                '& .MuiListItemIcon-root': {
-                                    color: '#2563EB',
+                {menuItems
+                    .filter((item) => !item.roles || item.roles.includes(user?.role))
+                    .map((item) => (
+                        <ListItemButton
+                            key={item.text}
+                            component={item.path ? NavLink : 'div'}
+                            {...(item.path ? { to: item.path, end: true } : {})}
+                            disabled={!item.path}
+                            sx={{
+                                borderRadius: 2,
+                                mb: 1,
+                                color: '#F8FAFC',
+                                textDecoration: 'none',
+                                '&:hover': {
+                                    backgroundColor: '#1E293B',
                                 },
-                            },
-                        }}
-                    >
-                        <ListItemIcon sx={{ color: '#94A3B8', minWidth: 42 }}>
-                            {item.icon}
-                        </ListItemIcon>
+                                '&.active': {
+                                    backgroundColor: '#1E3A5F',
+                                    '& .MuiListItemIcon-root': {
+                                        color: '#2563EB',
+                                    },
+                                },
+                            }}
+                        >
+                            <ListItemIcon sx={{ color: '#94A3B8', minWidth: 42 }}>
+                                {item.icon}
+                            </ListItemIcon>
 
-                        <ListItemText
-                            primary={item.text}
-                            primaryTypographyProps={{ fontSize: 14 }}
-                        />
-                    </ListItemButton>
-                ))}
+                            <ListItemText
+                                primary={item.text}
+                                primaryTypographyProps={{ fontSize: 14 }}
+                            />
+                        </ListItemButton>
+                    ))}
             </List>
         </Drawer>
     );

@@ -1,8 +1,12 @@
-
 const alertConfigurations = {
-    budget: {
-        title: 'Presupuesto crítico o excedido',
-        description: 'La inversión de la campaña alcanzó o superó el presupuesto establecido.',
+    budgetCritical: {
+        title: 'Presupuesto próximo al límite',
+        description: 'La inversión de la campaña alcanzó el 90% del presupuesto establecido.',
+        severity: 'medium',
+    },
+    budgetExceeded: {
+        title: 'Presupuesto excedido',
+        description: 'La inversión de la campaña superó el presupuesto establecido.',
         severity: 'critical',
     },
     down: {

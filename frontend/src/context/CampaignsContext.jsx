@@ -17,11 +17,22 @@ export function CampaignsProvider({ children }) {
         );
     };
 
+    const updateCampaignInvestment = (campaignId, investment) => {
+        setCampaigns(previousCampaigns =>
+            previousCampaigns.map(campaign =>
+                campaign.id === campaignId
+                    ? { ...campaign, investment }
+                    : campaign
+            )
+        );
+    };
+
     return (
         <CampaignsContext.Provider
             value={{
                 campaigns,
                 updateCampaignStatus,
+                updateCampaignInvestment,
             }}
         >
             {children}
@@ -40,3 +51,4 @@ export function useCampaigns() {
 
     return context;
 }
+

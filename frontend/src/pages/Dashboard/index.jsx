@@ -1,4 +1,3 @@
-
 import { Box, Typography } from '@mui/material';
 import {
     CampaignOutlined,
@@ -10,37 +9,70 @@ import {
 import StatCard from '../../components/dashboard/StatCard';
 import CampaignChart from '../../components/dashboard/CampaignChart';
 import InvestmentChart from '../../components/dashboard/InvestmentChart';
-import { dashboardStats } from '../../data/dashboardData';
 import ConversionsChart from '../../components/dashboard/ConversionsChart';
 import CTRChart from '../../components/dashboard/CTRChart';
 import RecentAlerts from '../../components/dashboard/RecentAlerts';
 
+import { useCampaigns } from '../../context/CampaignsContext';
+import { useAlerts } from '../../context/AlertsContext';
+
 function Dashboard() {
+    const { campaigns } = useCampaigns();
+    const { alerts } = useAlerts();
+
+    // Cálculo de estadísticas actuales
+    const activeCampaigns = campaigns.filter(
+        campaign => campaign.status === 'active'
+    ).length;
+
+    const criticalAlerts = alerts.filter(
+        alert => alert.severity === 'critical'
+    ).length;
+
+    const totalInvestment = campaigns.reduce(
+        (total, campaign) => total + campaign.investment,
+        0
+    );
+
+    const totalImpressions = campaigns.reduce(
+        (total, campaign) => total + campaign.impressions,
+        0
+    );
+
+    const totalClicks = campaigns.reduce(
+        (total, campaign) => total + campaign.clicks,
+        0
+    );
+
+    const ctr = totalImpressions > 0
+        ? (totalClicks / totalImpressions) * 100
+        : 0;
+
     const stats = [
         {
             title: 'Campañas activas',
-            value: dashboardStats.activeCampaigns,
+            value: activeCampaigns,
             subtitle: 'Campañas en ejecución',
             icon: <CampaignOutlined />,
             color: '#2563EB',
         },
         {
             title: 'Alertas críticas',
-            value: dashboardStats.criticalAlerts,
+            value: criticalAlerts,
             subtitle: 'Requieren atención',
             icon: <NotificationsActiveOutlined />,
             color: '#EF4444',
         },
         {
             title: 'Inversión total',
-            value: `$${dashboardStats.totalInvestment.toLocaleString('es-AR')}`,
+            value: `$${totalInvestment.toLocaleString('es-AR')}`,
             subtitle: 'Inversión acumulada',
             icon: <AttachMoneyOutlined />,
             color: '#10B981',
         },
         {
             title: 'CTR promedio',
-            value: `${dashboardStats.ctr.toFixed(2)}%`,
+            value: `${ctr.toFixed(2)}%`,
             subtitle: 'Clics sobre impresiones',
             icon: <TrendingUpOutlined />,
             color: '#22D3EE',
@@ -93,6 +125,7 @@ function Dashboard() {
                 <CampaignChart />
                 <InvestmentChart />
             </Box>
+
             {/* Fila 3: Gráficos */}
             <Box
                 sx={{
@@ -108,6 +141,7 @@ function Dashboard() {
                 <ConversionsChart />
                 <CTRChart />
             </Box>
+
             <Box sx={{ width: '100%', mt: 1 }}>
                 <RecentAlerts />
             </Box>
@@ -116,3 +150,5 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+

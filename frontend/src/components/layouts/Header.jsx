@@ -5,11 +5,45 @@ import {
     Box,
     IconButton,
     Avatar,
+    Tooltip,
 } from '@mui/material';
 
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 function Header() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    const pageTitles = {
+        '/dashboard': 'Dashboard',
+        '/campaigns': 'Campañas',
+        '/alerts': 'Alertas',
+        '/reports': 'Reportes',
+        '/users': 'Usuarios',
+    };
+
+    const pageTitle = pageTitles[location.pathname] || 'PulseAlert';
+
+    const roleNames = {
+        admin: 'Administrador',
+        user: user?.plan === 'premium' ? 'Premium' : 'Free',
+    };
+
+    const userName = user
+        ? `${user.firstName} ${user.lastName}`
+        : 'Invitado';
+    const userRole = roleNames[user?.role] || 'Sin sesión';
+    const avatarLetter = userName.charAt(0).toUpperCase();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login', { replace: true });
+    };
+
     return (
         <AppBar
             position="static"
@@ -22,7 +56,7 @@ function Header() {
         >
             <Toolbar sx={{ justifyContent: 'space-between' }}>
                 <Typography variant="h6" fontWeight="600">
-                    Dashboard
+                    {pageTitle}
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -32,16 +66,31 @@ function Header() {
 
                     <Box sx={{ textAlign: 'right' }}>
                         <Typography variant="body2" fontWeight="600">
-                            Franco Esquivel
+                            {userName}
                         </Typography>
                         <Typography variant="caption" color="#94A3B8">
-                            Administrador
+                            {userRole}
                         </Typography>
                     </Box>
 
                     <Avatar sx={{ bgcolor: '#2563EB' }}>
-                        F
+                        {avatarLetter}
                     </Avatar>
+
+                    <Tooltip title="Cerrar sesión">
+                        <IconButton
+                            onClick={handleLogout}
+                            sx={{
+                                color: '#94A3B8',
+                                '&:hover': {
+                                    color: '#EF4444',
+                                    backgroundColor: 'rgba(239,68,68,0.1)',
+                                },
+                            }}
+                        >
+                            <LogoutIcon />
+                        </IconButton>
+                    </Tooltip>
                 </Box>
             </Toolbar>
         </AppBar>

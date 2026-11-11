@@ -1,4 +1,3 @@
-
 import {
     ResponsiveContainer,
     BarChart,
@@ -10,9 +9,11 @@ import {
 } from 'recharts';
 
 import { Box, Typography } from '@mui/material';
-import { campaigns } from '../../data/dashboardData';
+import { useCampaigns } from '../../context/CampaignsContext';
 
 function ConversionsChart() {
+    const { campaigns } = useCampaigns();
+
     return (
         <Box
             sx={{
@@ -79,3 +80,4 @@ function ConversionsChart() {
 }
 
 export default ConversionsChart;
+
