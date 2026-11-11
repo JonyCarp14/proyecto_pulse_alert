@@ -5,6 +5,8 @@ from jose import JWTError, jwt
 
 from app.core.config import settings
 
+
+
 #Genera el token cuando el usuario inicia sesion
 
 def create_access_token(data: dict):

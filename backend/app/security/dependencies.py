@@ -7,6 +7,9 @@ from app.models.user import User
 from app.repositories.user_repository import get_user_by_id
 from app.security.jwt import verify_access_token
 
+# Dependencias de seguridad para proteger las rutas de la API.
+# get_current_user: valida el JWT e identifica al usuario autenticado.
+# require_admin: verifica que el usuario tenga permisos de administrador.
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

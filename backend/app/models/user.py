@@ -14,9 +14,5 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     rol: Mapped[str] = mapped_column(String(20), nullable=False, default="user")
 
-# Plan de suscripción: free o premium.
-    plan: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False,
-        default="free"
-    )
+    # Plan de suscripción: free o premium.
+    plan: Mapped[str] = mapped_column(String(20),nullable=False,default="free")

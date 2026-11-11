@@ -16,5 +16,8 @@ class Settings:
     DB_NAME: str = os.getenv("DB_NAME", "")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "")
 
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30 #duracion del token 30 min
+
 
 settings = Settings()
