@@ -22,41 +22,56 @@ import {
     TrendingUp,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-
 const chartBars = [35, 55, 42, 75, 60, 90, 70, 100, 82, 115, 95, 130];
-
 function Login() {
     const navigate = useNavigate();
-    const { login } = useAuth();
-
+    const { login, loginWithMock } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        setError('');
-
-        if (!email.trim() || !password) {
-            setError('Completá todos los campos.');
-            return;
-        }
-
-        const result = login(email.trim(), password);
-
-        if (!result.success) {
-            setError(result.message);
-            return;
-        }
-
-        if (result.user.role === 'admin') {
+    const [loading, setLoading] = useState(false);
+    const redirectUser = (user) => {
+        if (user.role === 'admin' || user.rol === 'admin') {
             navigate('/users');
         } else {
             navigate('/dashboard');
         }
     };
-
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setError('');
+        if (!email.trim() || !password) {
+            setError('Completá todos los campos.');
+            return;
+        }
+        setLoading(true);
+        try {
+            const result = await login(email.trim(), password);
+            if (!result.success) {
+                setError(result.message);
+                return;
+            }
+            redirectUser(result.user);
+        } catch {
+            setError('No se pudo iniciar sesión. Intentá nuevamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    const handleMockLogin = () => {
+        setError('');
+        if (!email.trim() || !password) {
+            setError('Completá el correo y la contraseña para ingresar en modo desarrollo.');
+            return;
+        }
+        const result = loginWithMock(email.trim(), password);
+        if (!result.success) {
+            setError(result.message);
+            return;
+        }
+        redirectUser(result.user);
+    };
     return (
         <Box
             sx={{
@@ -84,7 +99,6 @@ function Login() {
                         boxShadow: '0 24px 70px rgba(0,0,0,0.3)',
                     }}
                 >
-                    {/* Logo e identidad de PulseAlert */}
                     <Stack alignItems="center" spacing={0.5} mb={4}>
                         <Box
                             component="img"
@@ -96,7 +110,6 @@ function Login() {
                                 objectFit: 'contain',
                             }}
                         />
-
                         <Typography
                             component="div"
                             sx={{
@@ -121,7 +134,6 @@ function Login() {
                                 Alert
                             </Box>
                         </Typography>
-
                         <Stack direction="row" spacing={0.8} mt={1}>
                             <Typography sx={{ fontSize: 8, letterSpacing: '1px', color: '#0865F5' }}>
                                 MONITOR.
@@ -134,30 +146,19 @@ function Login() {
                             </Typography>
                         </Stack>
                     </Stack>
-
-                    {/* Encabezado del formulario */}
                     <Box mb={3}>
-                        <Typography
-                            variant="h5"
-                            fontWeight="bold"
-                            color="#F8FAFC"
-                            mb={1}
-                        >
+                        <Typography variant="h5" fontWeight="bold" color="#F8FAFC" mb={1}>
                             Bienvenido de nuevo
                         </Typography>
-
                         <Typography color="#94A3B8" variant="body2">
                             Ingresá a tu cuenta para continuar.
                         </Typography>
                     </Box>
-
                     {error && (
                         <Alert severity="error" sx={{ mb: 2 }}>
                             {error}
                         </Alert>
                     )}
-
-                    {/* Formulario de acceso */}
                     <Box component="form" onSubmit={handleSubmit}>
                         <Stack spacing={2.5}>
                             <TextField
@@ -186,7 +187,6 @@ function Login() {
                                     },
                                 }}
                             />
-
                             <TextField
                                 fullWidth
                                 label="Contraseña"
@@ -226,12 +226,12 @@ function Login() {
                                     ),
                                 }}
                             />
-
                             <Button
                                 fullWidth
                                 type="submit"
                                 variant="contained"
                                 size="large"
+                                disabled={loading}
                                 sx={{
                                     py: 1.5,
                                     borderRadius: 2,
@@ -245,12 +245,41 @@ function Login() {
                                     },
                                 }}
                             >
-                                Iniciar sesión
+                                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                             </Button>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Box sx={{ flex: 1, height: '1px', backgroundColor: '#263244' }} />
+                                <Typography variant="caption" color="#64748B">
+                                    O
+                                </Typography>
+                                <Box sx={{ flex: 1, height: '1px', backgroundColor: '#263244' }} />
+                            </Box>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                size="large"
+                                onClick={handleMockLogin}
+                                disabled={loading}
+                                sx={{
+                                    py: 1.3,
+                                    borderRadius: 2,
+                                    borderColor: '#475569',
+                                    color: '#CBD5E1',
+                                    textTransform: 'none',
+                                    fontWeight: 'bold',
+                                    '&:hover': {
+                                        borderColor: '#08BCEB',
+                                        backgroundColor: 'rgba(8,188,235,0.06)',
+                                    },
+                                }}
+                            >
+                                Ingresar en modo desarrollo
+                            </Button>
+                            <Typography variant="caption" color="#64748B" textAlign="center">
+                                Acceso temporal con cuentas de prueba.
+                            </Typography>
                         </Stack>
                     </Box>
-
-                    {/* Referencias visuales de PulseAlert */}
                     <Box
                         sx={{
                             mt: 4,
@@ -265,7 +294,6 @@ function Login() {
                         >
                             TODO TU MARKETING EN UN SOLO LUGAR
                         </Typography>
-
                         <Stack
                             direction="row"
                             justifyContent="space-between"
@@ -288,8 +316,6 @@ function Login() {
                                 </Stack>
                             ))}
                         </Stack>
-
-                        {/* Gráfico decorativo */}
                         <Box
                             sx={{
                                 height: 65,
@@ -323,7 +349,6 @@ function Login() {
                             ))}
                         </Box>
                     </Box>
-
                     <Typography
                         variant="caption"
                         color="#64748B"
@@ -338,6 +363,4 @@ function Login() {
         </Box>
     );
 }
-
 export default Login;
-
