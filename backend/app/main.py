@@ -5,14 +5,16 @@ from app.models.base import Base
 from app.models import User, Campaign, Alert
 from app.models.report import Report
 
-# Tus rutas
+# Mis rutas
 from app.routes.auth import router as auth_router
 from app.routes.users import router as users_router
+from app.routes import campaign_metrics_history
 
 # Rutas de Jony
 from app.routes.campaigns import router as campaigns_router
 from app.routes.alerts import router as alerts_router
 from app.routes.reports import router as reports_router
+
 
 
 app = FastAPI(title="Pulse Alert API")
@@ -25,6 +27,7 @@ app.include_router(users_router)
 app.include_router(campaigns_router)
 app.include_router(alerts_router)
 app.include_router(reports_router)
+app.include_router(campaign_metrics_history.router)
 
 
 Base.metadata.create_all(bind=engine)
