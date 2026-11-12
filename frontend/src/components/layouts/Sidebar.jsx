@@ -19,8 +19,8 @@ import { useAuth } from '../../context/AuthContext';
 const menuItems = [
     { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/dashboard', roles: ['user'] },
     { text: 'Campañas', icon: <CampaignOutlinedIcon />, path: '/campaigns', roles: ['user'] },
-    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon />, roles: ['user'] },
-    { text: 'Reportes', icon: <AssessmentOutlinedIcon />, roles: ['user'] },
+    { text: 'Alertas', icon: <NotificationsActiveOutlinedIcon />, path: '/alerts', roles: ['user'] },
+    { text: 'Reportes', icon: <AssessmentOutlinedIcon />, path: '/reports', roles: ['user'] },
     { text: 'Usuarios', icon: <PeopleOutlineIcon />, path: '/users', roles: ['admin'] },
 ];
 

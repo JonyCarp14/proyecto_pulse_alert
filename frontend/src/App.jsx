@@ -1,16 +1,16 @@
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './components/layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Campaigns from './pages/Campaigns';
+import Alerts from './pages/Alerts';
+import Reports from './pages/Reports';
 import Users from './pages/Users';
 import { AuthProvider } from './context/AuthContext';
 import { AlertsProvider } from './context/AlertsContext';
 import { CampaignsProvider } from './context/CampaignsContext';
 import { UsersProvider } from './context/UsersContext';
-
 function App() {
     return (
         <AuthProvider>
@@ -38,6 +38,22 @@ function App() {
                                             </MainLayout>
                                         }
                                     />
+                                    <Route
+                                        path="/alerts"
+                                        element={
+                                            <MainLayout>
+                                                <Alerts />
+                                            </MainLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/reports"
+                                        element={
+                                            <MainLayout>
+                                                <Reports />
+                                            </MainLayout>
+                                        }
+                                    />
                                 </Route>
                                 <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                                     <Route
@@ -57,8 +73,8 @@ function App() {
         </AuthProvider>
     );
 }
-
 export default App;
+
 
 
 

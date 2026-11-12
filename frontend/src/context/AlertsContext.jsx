@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState } from 'react';
 import { alerts as initialAlerts } from '../data/dashboardData';
 
@@ -8,14 +7,28 @@ export function AlertsProvider({ children }) {
     const [alerts, setAlerts] = useState(initialAlerts);
 
     const addAlert = (newAlert) => {
+        const alertWithMetadata = {
+            ...newAlert,
+            id: Date.now(),
+            date: new Date().toISOString(),
+        };
+
         setAlerts((previousAlerts) => [
-            {
-                ...newAlert,
-                id: Date.now(),
-                date: new Date().toISOString(),
-            },
+            alertWithMetadata,
             ...previousAlerts,
         ]);
+
+        return alertWithMetadata;
+    };
+
+    const updateAlert = (alertId, updatedData) => {
+        setAlerts((previousAlerts) =>
+            previousAlerts.map((alert) =>
+                alert.id === alertId
+                    ? { ...alert, ...updatedData }
+                    : alert
+            )
+        );
     };
 
     return (
@@ -23,6 +36,7 @@ export function AlertsProvider({ children }) {
             value={{
                 alerts,
                 addAlert,
+                updateAlert,
             }}
         >
             {children}
