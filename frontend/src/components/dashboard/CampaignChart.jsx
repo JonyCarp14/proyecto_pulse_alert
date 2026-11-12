@@ -1,4 +1,3 @@
-
 import {
     ResponsiveContainer,
     LineChart,
@@ -9,49 +8,31 @@ import {
     Tooltip,
     Legend,
 } from 'recharts';
-
 import { Box, Typography } from '@mui/material';
-import { dailyMetrics } from '../../data/dashboardData';
-
+import { useCampaigns } from '../../context/CampaignsContext';
 function CampaignChart() {
+    const { campaigns } = useCampaigns();
     return (
-        <Box
-            sx={{
-                backgroundColor: '#111827',
-                border: '1px solid #263244',
-                borderRadius: 3,
-                p: 3,
-                width: '100%',
-                minWidth: 0,
-            }}
-        >
+        <Box sx={{ backgroundColor: '#111827', border: '1px solid #263244', borderRadius: 3, p: 3, width: '100%', minWidth: 0 }}>
             <Typography variant="h6" fontWeight="bold" color="#F8FAFC">
                 Rendimiento de campañas
             </Typography>
-
             <Typography variant="body2" color="#94A3B8" sx={{ mb: 3 }}>
-                Evolución de impresiones y clics durante los últimos 7 días.
+                Comparación de impresiones y clics por campaña.
             </Typography>
-
             <Box sx={{ width: '100%', height: 380 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                        data={dailyMetrics}
-                        margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                    >
+                    <LineChart data={campaigns} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                         <CartesianGrid stroke="#263244" strokeDasharray="3 3" />
-
                         <XAxis
-                            dataKey="day"
+                            dataKey="name"
                             stroke="#94A3B8"
-                            tick={{ fill: '#94A3B8', fontSize: 12 }}
+                            tick={{ fill: '#94A3B8', fontSize: 11 }}
+                            angle={-15}
+                            textAnchor="end"
+                            height={65}
                         />
-
-                        <YAxis
-                            stroke="#94A3B8"
-                            tick={{ fill: '#94A3B8', fontSize: 12 }}
-                        />
-
+                        <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12 }} />
                         <Tooltip
                             contentStyle={{
                                 backgroundColor: '#111827',
@@ -60,9 +41,7 @@ function CampaignChart() {
                                 color: '#F8FAFC',
                             }}
                         />
-
                         <Legend />
-
                         <Line
                             type="monotone"
                             dataKey="impressions"
@@ -72,7 +51,6 @@ function CampaignChart() {
                             dot={{ r: 4 }}
                             activeDot={{ r: 6 }}
                         />
-
                         <Line
                             type="monotone"
                             dataKey="clicks"
@@ -88,5 +66,6 @@ function CampaignChart() {
         </Box>
     );
 }
-
 export default CampaignChart;
+
+

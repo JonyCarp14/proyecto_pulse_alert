@@ -8,10 +8,16 @@ import {
     Button,
     Collapse,
     LinearProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import {
     ExpandMore,
     ExpandLess,
+    EditOutlined,
+    DeleteOutline
 } from '@mui/icons-material';
 
 import { useAlerts } from '../../context/AlertsContext';
@@ -19,11 +25,15 @@ import { useCampaigns } from '../../context/CampaignsContext';
 import { generateAlert } from '../../services/alertService';
 import EventSimulator from './EventSimulator';
 
-function CampaignCard({ campaign }) {
+function CampaignCard({ campaign, onEdit }) {
     const [expanded, setExpanded] = useState(false);
-
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const { alerts, addAlert } = useAlerts();
-    const { updateCampaignStatus, updateCampaignInvestment } = useCampaigns();
+    const {
+        updateCampaignStatus,
+        updateCampaignInvestment,
+        deleteCampaign,
+    } = useCampaigns();
 
     const budgetPercentage = campaign.budget > 0
         ? (campaign.investment / campaign.budget) * 100
@@ -82,6 +92,10 @@ function CampaignCard({ campaign }) {
         if (eventType === 'paused') {
             updateCampaignStatus(campaignId, 'paused');
         }
+    };
+    const handleDelete = () => {
+        deleteCampaign(campaign.id);
+        setDeleteDialogOpen(false);
     };
 
     return (
@@ -160,21 +174,46 @@ function CampaignCard({ campaign }) {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         mt: 2,
-                        gap: 2,
+                        gap: 1,
+                        flexWrap: 'wrap',
                     }}
                 >
-                    {campaign.status !== 'active' && (
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         <Button
                             size="small"
                             variant="outlined"
-                            color="success"
-                            onClick={() => updateCampaignStatus(campaign.id, 'active')}
+                            startIcon={<EditOutlined />}
+                            onClick={() => onEdit(campaign)}
+                            sx={{
+                                textTransform: 'none',
+                                borderColor: '#475569',
+                                color: '#CBD5E1',
+                            }}
+                        >
+                            Editar
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteOutline />}
+                            onClick={() => setDeleteDialogOpen(true)}
                             sx={{ textTransform: 'none' }}
                         >
-                            Reactivar campaña
+                            Eliminar
                         </Button>
-                    )}
-
+                        {campaign.status !== 'active' && (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                color="success"
+                                onClick={() => updateCampaignStatus(campaign.id, 'active')}
+                                sx={{ textTransform: 'none' }}
+                            >
+                                Reactivar campaña
+                            </Button>
+                        )}
+                    </Box>
                     <Button
                         size="small"
                         onClick={() => setExpanded(!expanded)}
@@ -298,6 +337,36 @@ function CampaignCard({ campaign }) {
                         onSimulate={handleSimulate}
                     />
                 </Collapse>
+                <Dialog
+                    open={deleteDialogOpen}
+                    onClose={() => setDeleteDialogOpen(false)}
+                    fullWidth
+                    maxWidth="xs"
+                >
+                    <DialogTitle>Eliminar campaña</DialogTitle>
+                    <DialogContent>
+                        <Typography>
+                            ¿Estás seguro de que querés eliminar la campaña
+                            <strong> {campaign.name}</strong>?
+                            Esta acción no se puede deshacer.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2 }}>
+                        <Button
+                            onClick={() => setDeleteDialogOpen(false)}
+                            color="inherit"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleDelete}
+                            color="error"
+                            variant="contained"
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </CardContent>
         </Card>
     );
