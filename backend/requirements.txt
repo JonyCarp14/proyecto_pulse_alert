@@ -6,3 +6,4 @@ alembic
 pwdlib[argon2]
 python-jose[cryptography]
 reportlab
+httpx
