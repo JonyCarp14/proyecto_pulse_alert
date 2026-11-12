@@ -6,7 +6,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 // formatea un número como plata: 22000 → "$22.000"
 const plata = (n) => `$${n.toLocaleString("es-AR")}`;
 
-// los 4 eventos que se pueden simular (los mismos que diseñó Franco)
+
 export const eventos = [
   {
     id: "presupuesto",

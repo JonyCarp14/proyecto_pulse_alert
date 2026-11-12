@@ -9,6 +9,7 @@ import { alerts as initialAlerts } from './data/dashboardData';
 import { AlertsProvider } from './context/AlertsContext';
 
 import Alerts from './pages/Alerts';
+import Reports from './pages/Reports';
 
 function App() {
     const [alerts, setAlerts] = useState(initialAlerts);
@@ -21,6 +22,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/campaigns" element={<Campaigns />} />
                     <Route path="/alerts" element={<Alerts />} />
+                    <Route path="/reports" element={<Reports />} />
 
                 </Routes>
             </MainLayout>

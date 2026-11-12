@@ -18,10 +18,10 @@ export default function TarjetaAlerta({ alerta }) {
   // franja de color de la tarjeta si es nueva o no
   const esNueva = alerta.status === "nueva";
 
-  
+
 
   return (
-    
+
     <Card
       variant="outlined"
       sx={{
@@ -51,11 +51,10 @@ export default function TarjetaAlerta({ alerta }) {
             </Typography>
           </Stack>
 
+          <Typography sx={{ fontWeight: 700 }}>{alerta.titulo}</Typography>
           <Typography variant="body1">{alerta.message}</Typography>
 
-          <Typography variant="body2" color="text.secondary">
-            <Typography sx={{ fontWeight: 700 }}>{alerta.titulo}</Typography>
-          </Typography>
+
 
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip
