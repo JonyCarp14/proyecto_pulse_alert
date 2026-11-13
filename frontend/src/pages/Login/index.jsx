@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -25,7 +24,7 @@ import { useAuth } from '../../context/AuthContext';
 const chartBars = [35, 55, 42, 75, 60, 90, 70, 100, 82, 115, 95, 130];
 function Login() {
     const navigate = useNavigate();
-    const { login, loginWithMock } = useAuth();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -58,19 +57,6 @@ function Login() {
         } finally {
             setLoading(false);
         }
-    };
-    const handleMockLogin = () => {
-        setError('');
-        if (!email.trim() || !password) {
-            setError('Completá el correo y la contraseña para ingresar en modo desarrollo.');
-            return;
-        }
-        const result = loginWithMock(email.trim(), password);
-        if (!result.success) {
-            setError(result.message);
-            return;
-        }
-        redirectUser(result.user);
     };
     return (
         <Box
@@ -247,37 +233,6 @@ function Login() {
                             >
                                 {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                             </Button>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Box sx={{ flex: 1, height: '1px', backgroundColor: '#263244' }} />
-                                <Typography variant="caption" color="#64748B">
-                                    O
-                                </Typography>
-                                <Box sx={{ flex: 1, height: '1px', backgroundColor: '#263244' }} />
-                            </Box>
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                size="large"
-                                onClick={handleMockLogin}
-                                disabled={loading}
-                                sx={{
-                                    py: 1.3,
-                                    borderRadius: 2,
-                                    borderColor: '#475569',
-                                    color: '#CBD5E1',
-                                    textTransform: 'none',
-                                    fontWeight: 'bold',
-                                    '&:hover': {
-                                        borderColor: '#08BCEB',
-                                        backgroundColor: 'rgba(8,188,235,0.06)',
-                                    },
-                                }}
-                            >
-                                Ingresar en modo desarrollo
-                            </Button>
-                            <Typography variant="caption" color="#64748B" textAlign="center">
-                                Acceso temporal con cuentas de prueba.
-                            </Typography>
                         </Stack>
                     </Box>
                     <Box
@@ -364,3 +319,4 @@ function Login() {
     );
 }
 export default Login;
+

@@ -1,4 +1,3 @@
-
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,8 +8,10 @@ function ProtectedRoute({ allowedRoles }) {
         return <Navigate to="/login" replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-        const homePath = user.role === 'admin' ? '/users' : '/dashboard';
+    const userRole = user.role ?? user.rol;
+
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
+        const homePath = userRole === 'admin' ? '/users' : '/dashboard';
         return <Navigate to={homePath} replace />;
     }
 
@@ -18,4 +19,6 @@ function ProtectedRoute({ allowedRoles }) {
 }
 
 export default ProtectedRoute;
+
+
 

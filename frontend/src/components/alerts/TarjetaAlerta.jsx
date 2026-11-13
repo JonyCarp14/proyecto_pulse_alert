@@ -1,11 +1,14 @@
+
 import {
     Card,
     CardContent,
     Stack,
     Typography,
     Chip,
+    Button,
 } from '@mui/material';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import { useAlerts } from '../../context/AlertsContext';
 
 const colorTelegram = {
     enviando: 'default',
@@ -26,6 +29,8 @@ const nombrePrioridad = {
 };
 
 export default function TarjetaAlerta({ alerta }) {
+    const { markAsRead } = useAlerts();
+
     const fecha = alerta.created_at || alerta.date;
 
     const fechaFormateada = fecha
@@ -39,8 +44,11 @@ export default function TarjetaAlerta({ alerta }) {
     const titulo = alerta.titulo || alerta.title;
     const campania = alerta.campaign_name || alerta.campaign;
     const telegramStatus = alerta.telegram_status;
-
     const esNueva = alerta.status === 'nueva';
+
+    const handleMarkAsRead = () => {
+        markAsRead(alerta.id);
+    };
 
     return (
         <Card
@@ -60,11 +68,7 @@ export default function TarjetaAlerta({ alerta }) {
                         {fechaFormateada}
                     </Typography>
 
-                    <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                    >
+                    <Stack direction="row" spacing={1} alignItems="center">
                         {prioridad && (
                             <Chip
                                 label={nombrePrioridad[prioridad] || prioridad}
@@ -91,21 +95,26 @@ export default function TarjetaAlerta({ alerta }) {
                     )}
 
                     {telegramStatus && (
-                        <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                        >
+                        <Stack direction="row" spacing={1} alignItems="center">
                             <Chip
                                 icon={<TelegramIcon />}
                                 label={`Telegram: ${telegramStatus}`}
-                                color={
-                                    colorTelegram[telegramStatus] || 'default'
-                                }
+                                color={colorTelegram[telegramStatus] || 'default'}
                                 variant="outlined"
                                 size="small"
                             />
                         </Stack>
+                    )}
+
+                    {esNueva && (
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={handleMarkAsRead}
+                            sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
+                        >
+                            Marcar como leída
+                        </Button>
                     )}
                 </Stack>
             </CardContent>

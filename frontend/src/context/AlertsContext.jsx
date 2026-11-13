@@ -1,10 +1,60 @@
-import { createContext, useContext, useState } from 'react';
-import { alerts as initialAlerts } from '../data/dashboardData';
+
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
+import { apiRequest } from '../services/api';
 
 const AlertsContext = createContext(null);
 
 export function AlertsProvider({ children }) {
-    const [alerts, setAlerts] = useState(initialAlerts);
+    const { user } = useAuth();
+    const [alerts, setAlerts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (!user) {
+            setAlerts([]);
+            return;
+        }
+
+        let cancelled = false;
+
+        const loadAlerts = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data = await apiRequest('/alerts/');
+
+                if (!cancelled) {
+                    setAlerts(data.map((alert) => ({
+                        ...alert,
+                        id: alert.id_alert,
+                        created_at: alert.fecha,
+                        titulo: alert.tipo,
+                        message: alert.mensaje,
+                        status: alert.leida ? 'leida' : 'nueva',
+                        telegram_status: {
+                            pendiente: 'enviando',
+                            simulada: 'enviado',
+                            enviada: 'enviado',
+                            fallida: 'fallido',
+                        }[alert.estado_envio] || 'enviando',
+                    })));
+                }
+            } catch (err) {
+                if (!cancelled) setError(err.message);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        loadAlerts();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id_user]);
 
     const addAlert = (newAlert) => {
         const alertWithMetadata = {
@@ -13,22 +63,52 @@ export function AlertsProvider({ children }) {
             date: new Date().toISOString(),
         };
 
-        setAlerts((previousAlerts) => [
-            alertWithMetadata,
-            ...previousAlerts,
-        ]);
-
+        setAlerts((previous) => [alertWithMetadata, ...previous]);
         return alertWithMetadata;
     };
 
     const updateAlert = (alertId, updatedData) => {
-        setAlerts((previousAlerts) =>
-            previousAlerts.map((alert) =>
+        setAlerts((previous) =>
+            previous.map((alert) =>
                 alert.id === alertId
                     ? { ...alert, ...updatedData }
                     : alert
             )
         );
+    };
+
+    const markAsRead = async (alertId) => {
+        const alert = alerts.find((item) => item.id === alertId);
+
+        if (!alert || alert.status !== 'nueva') return;
+
+        // Las alertas simuladas no existen en PostgreSQL.
+        if (!alert.id_alert) {
+            updateAlert(alertId, { status: 'leida' });
+            return;
+        }
+
+        try {
+            const updated = await apiRequest(
+                `/alerts/${alert.id_alert}/read`,
+                { method: 'PATCH' }
+            );
+
+            setAlerts((previous) =>
+                previous.map((item) =>
+                    item.id === alertId
+                        ? {
+                              ...item,
+                              ...updated,
+                              id: updated.id_alert,
+                              status: updated.leida ? 'leida' : 'nueva',
+                          }
+                        : item
+                )
+            );
+        } catch (err) {
+            setError(err.message);
+        }
     };
 
     return (
@@ -37,6 +117,9 @@ export function AlertsProvider({ children }) {
                 alerts,
                 addAlert,
                 updateAlert,
+                markAsRead,
+                loading,
+                error,
             }}
         >
             {children}
@@ -55,3 +138,5 @@ export function useAlerts() {
 
     return context;
 }
+
+

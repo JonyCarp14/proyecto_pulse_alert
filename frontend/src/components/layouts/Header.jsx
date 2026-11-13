@@ -34,9 +34,9 @@ function Header() {
     };
 
     const userName = user
-        ? `${user.firstName} ${user.lastName}`
+        ? `${user.nombre ?? user.firstName ?? ''} ${user.apellido ?? user.lastName ?? ''}`.trim()
         : 'Invitado';
-    const userRole = roleNames[user?.role] || 'Sin sesión';
+    const userRole = roleNames[user?.rol ?? user?.role] || 'Sin sesión';
     const avatarLetter = userName.charAt(0).toUpperCase();
 
     const handleLogout = () => {

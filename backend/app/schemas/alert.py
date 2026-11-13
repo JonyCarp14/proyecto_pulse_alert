@@ -5,7 +5,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Métricas que una alerta puede controlar
 MetricaAlerta = Literal[
-    "gasto", "impresiones", "clics", "resultados", "costo_por_resultado"
+    "gasto",
+    "impresiones",
+    "clics",
+    "resultados",
+    "costo_por_resultado",
+    "estado",
 ]
 
 # Estado del envío de la notificación (distinto de generar la alerta)

@@ -73,14 +73,23 @@ export default function Alerts() {
         }, 1500);
     };
 
-    const alertasAdaptadas = alerts.map(adaptarAlerta);
+    const alertasAdaptadas = alerts.map((alerta) => {
+        const campania = campaigns.find(
+            (c) => Number(c.id) === Number(alerta.campaign_id)
+        );
+
+        return adaptarAlerta({
+            ...alerta,
+            campaign_name: campania?.name || 'Campaña sin nombre',
+        });
+    });
 
     const filtradas =
         filtro === 'todas'
             ? alertasAdaptadas
             : alertasAdaptadas.filter(
-                  (alerta) => alerta.priority === filtro
-              );
+                (alerta) => alerta.priority === filtro
+            );
 
     return (
         <Stack spacing={3}>

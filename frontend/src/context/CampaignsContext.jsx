@@ -1,72 +1,152 @@
+import { createContext, useContext, useEffect, useState } from 'react';
+import { apiRequest } from '../services/api';
+import { useAuth } from './AuthContext';
 
-import { createContext, useContext, useState } from 'react';
-import { campaigns as initialCampaigns } from '../data/dashboardData';
 const CampaignsContext = createContext(null);
+
+const statusToBackend = {
+    active: 'activa',
+    paused: 'pausada',
+    finished: 'finalizada',
+};
+
+const statusToFrontend = {
+    activa: 'active',
+    pausada: 'paused',
+    finalizada: 'finished',
+};
+
+const mapCampaign = (campaign) => ({
+    id: campaign.id_campaign,
+    name: campaign.nombre,
+    platform: campaign.cuenta_publicitaria || 'Meta Ads',
+    budget: Number(campaign.presupuesto || 0),
+    investment: Number(campaign.gasto || 0),
+    impressions: Number(campaign.impresiones || 0),
+    clicks: Number(campaign.clics || 0),
+    conversions: Number(campaign.resultados || 0),
+    status: statusToFrontend[campaign.estado] || 'active',
+    costPerResult: campaign.costo_por_resultado,
+    updatedAt: campaign.fecha_actualizacion,
+});
+
+const mapCampaignData = (data) => {
+    const payload = {};
+
+    if (data.name !== undefined) payload.nombre = data.name;
+    if (data.platform !== undefined) payload.cuenta_publicitaria = data.platform;
+    if (data.budget !== undefined) payload.presupuesto = Number(data.budget);
+    if (data.investment !== undefined) payload.gasto = Number(data.investment);
+    if (data.impressions !== undefined) payload.impresiones = Number(data.impressions);
+    if (data.clicks !== undefined) payload.clics = Number(data.clicks);
+    if (data.conversions !== undefined) payload.resultados = Number(data.conversions);
+    if (data.status !== undefined) payload.estado = statusToBackend[data.status] || data.status;
+
+    return payload;
+};
+
 export function CampaignsProvider({ children }) {
-    const [campaigns, setCampaigns] = useState(initialCampaigns);
-    const addCampaign = (campaignData) => {
-        setCampaigns(previousCampaigns => {
-            const nextId = previousCampaigns.reduce(
-                (maxId, campaign) => Math.max(maxId, campaign.id),
-                0
-            ) + 1;
-            const newCampaign = {
-                id: nextId,
-                name: campaignData.name,
-                platform: campaignData.platform,
-                budget: Number(campaignData.budget),
-                investment: 0,
-                impressions: 0,
-                clicks: 0,
-                conversions: 0,
-                status: 'active',
-            };
-            return [...previousCampaigns, newCampaign];
+    const { user } = useAuth();
+    const userId = user?.id_user ?? user?.id;
+
+    const [campaigns, setCampaigns] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadCampaigns = async () => {
+            if (!userId) {
+                setCampaigns([]);
+                setError('');
+                return;
+            }
+
+            setLoading(true);
+            setError('');
+
+            try {
+                const response = await apiRequest('/campaigns/');
+                if (!cancelled) {
+                    setCampaigns(response.map(mapCampaign));
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err.message);
+                    console.error('Error al cargar campañas:', err);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadCampaigns();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
+
+    const addCampaign = async (campaignData) => {
+        const response = await apiRequest('/campaigns/', {
+            method: 'POST',
+            body: JSON.stringify({
+                nombre: campaignData.name,
+                cuenta_publicitaria: campaignData.platform,
+                presupuesto: Number(campaignData.budget),
+            }),
         });
+
+        const newCampaign = mapCampaign(response);
+        setCampaigns(previous => [...previous, newCampaign]);
+
+        return newCampaign;
     };
-    const updateCampaign = (campaignId, updatedData) => {
-        setCampaigns(previousCampaigns =>
-            previousCampaigns.map(campaign =>
-                campaign.id === campaignId
-                    ? {
-                        ...campaign,
-                        ...updatedData,
-                        id: campaign.id,
-                        budget: updatedData.budget !== undefined
-                            ? Number(updatedData.budget)
-                            : campaign.budget,
-                    }
-                    : campaign
+
+    const updateCampaign = async (campaignId, updatedData) => {
+        const response = await apiRequest(`/campaigns/${campaignId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(mapCampaignData(updatedData)),
+        });
+
+        const updatedCampaign = mapCampaign(response);
+
+        setCampaigns(previous =>
+            previous.map(campaign =>
+                campaign.id === campaignId ? updatedCampaign : campaign
             )
         );
+
+        return updatedCampaign;
     };
-    const deleteCampaign = (campaignId) => {
-        setCampaigns(previousCampaigns =>
-            previousCampaigns.filter(campaign => campaign.id !== campaignId)
+
+    const deleteCampaign = async (campaignId) => {
+        await apiRequest(`/campaigns/${campaignId}`, {
+            method: 'DELETE',
+        });
+
+        setCampaigns(previous =>
+            previous.filter(campaign => campaign.id !== campaignId)
         );
     };
-    const updateCampaignStatus = (campaignId, status) => {
-        setCampaigns(previousCampaigns =>
-            previousCampaigns.map(campaign =>
-                campaign.id === campaignId
-                    ? { ...campaign, status }
-                    : campaign
-            )
-        );
+
+    const updateCampaignStatus = async (campaignId, status) => {
+        return updateCampaign(campaignId, { status });
     };
-    const updateCampaignInvestment = (campaignId, investment) => {
-        setCampaigns(previousCampaigns =>
-            previousCampaigns.map(campaign =>
-                campaign.id === campaignId
-                    ? { ...campaign, investment }
-                    : campaign
-            )
-        );
+
+    const updateCampaignInvestment = async (campaignId, investment) => {
+        return updateCampaign(campaignId, { investment });
     };
+
     return (
         <CampaignsContext.Provider
             value={{
                 campaigns,
+                loading,
+                error,
                 addCampaign,
                 updateCampaign,
                 deleteCampaign,
@@ -78,14 +158,18 @@ export function CampaignsProvider({ children }) {
         </CampaignsContext.Provider>
     );
 }
+
 export function useCampaigns() {
     const context = useContext(CampaignsContext);
+
     if (!context) {
         throw new Error(
             'useCampaigns debe utilizarse dentro de CampaignsProvider'
         );
     }
+
     return context;
 }
+
 
 

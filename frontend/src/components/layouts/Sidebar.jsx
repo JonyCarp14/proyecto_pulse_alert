@@ -26,6 +26,8 @@ const menuItems = [
 
 function Sidebar() {
     const { user } = useAuth();
+    const userRole = user?.role ?? user?.rol;
+
     return (
         <Drawer
             variant="permanent"
@@ -108,13 +110,13 @@ function Sidebar() {
 
             <List sx={{ mt: 2 }}>
                 {menuItems
-                    .filter((item) => !item.roles || item.roles.includes(user?.role))
+                    .filter((item) => !item.roles || item.roles.includes(userRole))
                     .map((item) => (
                         <ListItemButton
                             key={item.text}
-                            component={item.path ? NavLink : 'div'}
-                            {...(item.path ? { to: item.path, end: true } : {})}
-                            disabled={!item.path}
+                            component={NavLink}
+                            to={item.path}
+                            end
                             sx={{
                                 borderRadius: 2,
                                 mb: 1,
