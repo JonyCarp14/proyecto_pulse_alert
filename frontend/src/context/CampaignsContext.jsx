@@ -25,7 +25,7 @@ const mapCampaign = (campaign) => ({
     impressions: Number(campaign.impresiones || 0),
     clicks: Number(campaign.clics || 0),
     conversions: Number(campaign.resultados || 0),
-    status: statusToFrontend[campaign.estado] || 'active',
+    status: statusToFrontend[campaign.estado] || campaign.estado,
     costPerResult: campaign.costo_por_resultado,
     updatedAt: campaign.fecha_actualizacion,
 });
@@ -40,7 +40,16 @@ const mapCampaignData = (data) => {
     if (data.impressions !== undefined) payload.impresiones = Number(data.impressions);
     if (data.clicks !== undefined) payload.clics = Number(data.clicks);
     if (data.conversions !== undefined) payload.resultados = Number(data.conversions);
-    if (data.status !== undefined) payload.estado = statusToBackend[data.status] || data.status;
+
+    if (data.status !== undefined) {
+        const backendStatus = statusToBackend[data.status];
+
+        if (!backendStatus) {
+            throw new Error(`Estado de campaña no válido: ${data.status}`);
+        }
+
+        payload.estado = backendStatus;
+    }
 
     return payload;
 };

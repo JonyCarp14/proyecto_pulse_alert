@@ -22,13 +22,13 @@ import {
 
 import { useAlerts } from '../../context/AlertsContext';
 import { useCampaigns } from '../../context/CampaignsContext';
-import { generateAlert } from '../../services/alertService';
+
 import EventSimulator from './EventSimulator';
 
 function CampaignCard({ campaign, onEdit }) {
     const [expanded, setExpanded] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const { alerts, addAlert } = useAlerts();
+    const { alerts, createAlert } = useAlerts();
     const {
         updateCampaignStatus,
         updateCampaignInvestment,
@@ -59,11 +59,13 @@ function CampaignCard({ campaign, onEdit }) {
 
     const campaignAlerts = alerts.filter(
         alert =>
+            alert.campaign_id === campaign.id ||
             alert.campaignId === campaign.id ||
-            alert.campaign === campaign.name
+            alert.campaign === campaign.name ||
+            alert.campaign_name === campaign.name
     );
 
-    const handleSimulate = (campaignId, eventType) => {
+    const handleSimulate = async (campaignId, eventType) => {
         if (campaignId !== campaign.id) return;
 
         if (
@@ -73,26 +75,70 @@ function CampaignCard({ campaign, onEdit }) {
             return;
         }
 
-        const newAlert = generateAlert(campaign, eventType);
+        const alertConfig = {
+            budgetCritical: {
+                tipo: 'presupuesto',
+                metrica: 'gasto',
+                valor_detectado: campaign.budget * 0.9,
+                limite: campaign.budget,
+                mensaje: 'La campaña alcanzó el 90% de su presupuesto.',
+            },
+            budgetExceeded: {
+                tipo: 'presupuesto',
+                metrica: 'gasto',
+                valor_detectado: campaign.budget * 1.1,
+                limite: campaign.budget,
+                mensaje: 'La campaña superó su presupuesto en un 10%.',
+            },
+            down: {
+                tipo: 'caida',
+                metrica: 'estado',
+                valor_detectado: 0,
+                limite: 1,
+                mensaje: 'Se detectó una caída en la campaña.',
+            },
+            paused: {
+                tipo: 'pausada',
+                metrica: 'estado',
+                valor_detectado: 0,
+                limite: 1,
+                mensaje: 'La campaña fue pausada.',
+            },
+            performance: {
+                tipo: 'rendimiento',
+                metrica: 'clics',
+                valor_detectado: 0,
+                limite: Math.max(campaign.clicks || 0, 1),
+                mensaje: 'Se detectó una caída en el rendimiento de la campaña.',
+            },
+        };
 
-        addAlert(newAlert);
+        const config = alertConfig[eventType];
+        if (!config) return;
 
-        if (eventType === 'budgetCritical') {
-            updateCampaignInvestment(campaignId, campaign.budget * 0.9);
-        }
+        try {
+            await createAlert({
+                campaign_id: campaign.id,
+                ...config,
+            });
 
-        if (eventType === 'budgetExceeded') {
-            updateCampaignInvestment(campaignId, campaign.budget * 1.1);
-        }
+            if (eventType === 'budgetCritical') {
+                await updateCampaignInvestment(campaignId, campaign.budget * 0.9);
+            }
 
-        if (eventType === 'down') {
-            updateCampaignStatus(campaignId, 'down');
-        }
+            if (eventType === 'budgetExceeded') {
+                await updateCampaignInvestment(campaignId, campaign.budget * 1.1);
+            }
 
-        if (eventType === 'paused') {
-            updateCampaignStatus(campaignId, 'paused');
+            if (eventType === 'paused') {
+                await updateCampaignStatus(campaignId, 'paused');
+            }
+        } catch (error) {
+            console.error('Error al simular el evento:', error);
+            window.alert(error.message || 'No se pudo registrar el evento.');
         }
     };
+
     const handleDelete = () => {
         deleteCampaign(campaign.id);
         setDeleteDialogOpen(false);
@@ -283,47 +329,49 @@ function CampaignCard({ campaign, onEdit }) {
 
                         {campaignAlerts.length > 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                {campaignAlerts.map(alert => (
-                                    <Box
-                                        key={alert.id}
-                                        sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            p: 1.5,
-                                            borderRadius: 2,
-                                            backgroundColor: '#0B1220',
-                                        }}
-                                    >
-                                        <Box>
-                                            <Typography variant="body2" fontWeight="bold">
-                                                {alert.title}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {alert.date}
-                                            </Typography>
-                                        </Box>
+                                {campaignAlerts.map(alert => {
+                                    const severity = alert.priority || alert.severity || 'info';
 
-                                        <Chip
-                                            label={
-                                                alert.severity === 'critical'
-                                                    ? 'Crítica'
-                                                    : alert.severity === 'medium'
-                                                        ? 'Media'
-                                                        : 'Informativa'
-                                            }
-                                            size="small"
-                                            color={
-                                                alert.severity === 'critical'
-                                                    ? 'error'
-                                                    : alert.severity === 'medium'
-                                                        ? 'warning'
-                                                        : 'info'
-                                            }
-                                        />
-                                    </Box>
-                                ))}
+                                    const severityConfig = {
+                                        critical: { label: 'Crítica', color: 'error' },
+                                        medium: { label: 'Media', color: 'warning' },
+                                        info: { label: 'Informativa', color: 'info' },
+                                    };
+
+                                    const currentSeverity = severityConfig[severity] || severityConfig.info;
+
+                                    return (
+                                        <Box
+                                            key={alert.id}
+                                            sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                p: 1.5,
+                                                borderRadius: 2,
+                                                backgroundColor: '#0B1220',
+                                            }}
+                                        >
+                                            <Box>
+                                                <Typography variant="body2" fontWeight="bold">
+                                                    {alert.titulo || alert.title || alert.message || 'Alerta'}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {alert.created_at
+                                                        ? new Date(alert.created_at).toLocaleString('es-AR')
+                                                        : alert.date || 'Fecha no disponible'}
+                                                </Typography>
+                                            </Box>
+
+                                            <Chip
+                                                label={currentSeverity.label}
+                                                size="small"
+                                                color={currentSeverity.color}
+                                            />
+                                        </Box>
+                                    );
+                                })}
                             </Box>
                         ) : (
                             <Typography variant="body2" color="text.secondary">

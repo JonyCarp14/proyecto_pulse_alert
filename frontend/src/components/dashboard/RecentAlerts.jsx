@@ -1,3 +1,4 @@
+
 import {
     Box,
     Typography,
@@ -37,6 +38,7 @@ const severityConfig = {
 
 function RecentAlerts() {
     const { alerts } = useAlerts();
+
     return (
         <Box
             sx={{
@@ -58,7 +60,9 @@ function RecentAlerts() {
 
             <List disablePadding>
                 {alerts.map((alert, index) => {
-                    const config = severityConfig[alert.severity];
+                    const config =
+                        severityConfig[alert.priority || alert.severity] ||
+                        severityConfig.info;
 
                     return (
                         <Box key={alert.id}>
@@ -84,7 +88,7 @@ function RecentAlerts() {
                                             fontWeight={600}
                                             variant="body2"
                                         >
-                                            {alert.title}
+                                            {alert.titulo || alert.title || alert.tipo}
                                         </Typography>
                                     }
                                     secondary={
@@ -92,7 +96,9 @@ function RecentAlerts() {
                                             color="#94A3B8"
                                             variant="caption"
                                         >
-                                            {alert.campaign}
+                                            {alert.campaign_name ||
+                                                alert.campaign ||
+                                                'Campaña'}
                                         </Typography>
                                     }
                                 />
@@ -121,3 +127,4 @@ function RecentAlerts() {
 }
 
 export default RecentAlerts;
+

@@ -27,7 +27,7 @@ function adaptarAlerta(alerta) {
 }
 
 export default function Alerts() {
-    const { alerts, addAlert, updateAlert } = useAlerts();
+    const { alerts, createAlert } = useAlerts();
     const { campaigns } = useCampaigns();
 
     const [enviando, setEnviando] = useState(false);
@@ -35,7 +35,7 @@ export default function Alerts() {
     const [filtro, setFiltro] = useState('todas');
     const [eventoElegido, setEventoElegido] = useState(eventos[0].id);
 
-    const simularDisparo = () => {
+    const simularDisparo = async () => {
         const campania = campaigns.find(
             (c) => String(c.id) === String(campaniaElegida)
         );
@@ -46,31 +46,57 @@ export default function Alerts() {
 
         if (!campania || !evento || enviando) return;
 
-        const nueva = addAlert({
-            campaign: campania.name,
-            campaign_name: campania.name,
-            title: evento.titulo,
-            titulo: evento.titulo,
-            priority: evento.prioridad,
-            severity: evento.prioridad,
-            message: evento.mensaje({
+        setEnviando(true);
+
+        try {
+            let metrica;
+            let valorDetectado;
+            let limite;
+
+            switch (evento.id) {
+                case 'presupuesto':
+                    metrica = 'gasto';
+                    valorDetectado = campania.investment;
+                    limite = campania.budget;
+                    break;
+
+                case 'caida':
+                case 'pausada':
+                    metrica = 'estado';
+                    valorDetectado = 0;
+                    limite = 1;
+                    break;
+
+                case 'rendimiento':
+                    metrica = 'clics';
+                    valorDetectado = 0;
+                    limite = Math.max(campania.clicks, 1);
+                    break;
+
+                default:
+                    throw new Error('Evento no válido.');
+            }
+
+            const mensaje = evento.mensaje({
                 ...campania,
                 value: campania.investment,
                 limit: campania.budget,
-            }),
-            status: 'nueva',
-            telegram_status: 'enviando',
-        });
-
-        setEnviando(true);
-
-        setTimeout(() => {
-            updateAlert(nueva.id, {
-                telegram_status: 'enviado',
             });
 
+            await createAlert({
+                campaign_id: Number(campania.id),
+                tipo: evento.id,
+                mensaje,
+                metrica,
+                valor_detectado: valorDetectado,
+                limite,
+            });
+        } catch (error) {
+            console.error('Error al generar alerta:', error);
+            window.alert(error.message);
+        } finally {
             setEnviando(false);
-        }, 1500);
+        }
     };
 
     const alertasAdaptadas = alerts.map((alerta) => {
@@ -102,7 +128,6 @@ export default function Alerts() {
                 </Typography>
             </Box>
 
-            {/* Panel para simular un evento */}
             <Paper sx={{ p: 3, borderRadius: 4, backgroundImage: 'none' }}>
                 <Stack spacing={3}>
                     <Stack
@@ -138,9 +163,7 @@ export default function Alerts() {
                             select
                             label="Evento"
                             value={eventoElegido}
-                            onChange={(e) =>
-                                setEventoElegido(e.target.value)
-                            }
+                            onChange={(e) => setEventoElegido(e.target.value)}
                             fullWidth
                         >
                             {eventos.map((ev) => (
@@ -171,9 +194,7 @@ export default function Alerts() {
                             select
                             label="Campaña"
                             value={campaniaElegida}
-                            onChange={(e) =>
-                                setCampaniaElegida(e.target.value)
-                            }
+                            onChange={(e) => setCampaniaElegida(e.target.value)}
                             fullWidth
                         >
                             {campaigns.map((campania) => (
@@ -195,7 +216,6 @@ export default function Alerts() {
                 </Stack>
             </Paper>
 
-            {/* Alertas generadas */}
             <Paper sx={{ p: 3, borderRadius: 4, backgroundImage: 'none' }}>
                 <Stack spacing={2}>
                     <Stack
@@ -213,9 +233,7 @@ export default function Alerts() {
                             size="small"
                             exclusive
                             value={filtro}
-                            onChange={(e, nuevo) =>
-                                nuevo && setFiltro(nuevo)
-                            }
+                            onChange={(e, nuevo) => nuevo && setFiltro(nuevo)}
                             sx={{
                                 '& .MuiToggleButton-root': {
                                     textTransform: 'none',

@@ -1,9 +1,38 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { apiRequest } from '../services/api';
 
 const AlertsContext = createContext(null);
+
+const prioridades = {
+    presupuesto: 'critical',
+    caida: 'critical',
+    pausada: 'medium',
+    rendimiento: 'medium',
+};
+
+const titulos = {
+    presupuesto: 'Presupuesto crítico / excedido',
+    caida: 'Campaña caída',
+    pausada: 'Campaña pausada',
+    rendimiento: 'Caída del rendimiento',
+};
+
+const mapAlert = (alert) => ({
+    ...alert,
+    id: alert.id_alert,
+    created_at: alert.fecha,
+    titulo: titulos[alert.tipo] || alert.tipo,
+    message: alert.mensaje,
+    priority: prioridades[alert.tipo] || 'info',
+    status: alert.leida ? 'leida' : 'nueva',
+    telegram_status: {
+        pendiente: 'enviando',
+        simulada: 'enviado',
+        enviada: 'enviado',
+        fallida: 'fallido',
+    }[alert.estado_envio] || 'enviando',
+});
 
 export function AlertsProvider({ children }) {
     const { user } = useAuth();
@@ -27,20 +56,7 @@ export function AlertsProvider({ children }) {
                 const data = await apiRequest('/alerts/');
 
                 if (!cancelled) {
-                    setAlerts(data.map((alert) => ({
-                        ...alert,
-                        id: alert.id_alert,
-                        created_at: alert.fecha,
-                        titulo: alert.tipo,
-                        message: alert.mensaje,
-                        status: alert.leida ? 'leida' : 'nueva',
-                        telegram_status: {
-                            pendiente: 'enviando',
-                            simulada: 'enviado',
-                            enviada: 'enviado',
-                            fallida: 'fallido',
-                        }[alert.estado_envio] || 'enviando',
-                    })));
+                    setAlerts(data.map(mapAlert));
                 }
             } catch (err) {
                 if (!cancelled) setError(err.message);
@@ -55,6 +71,19 @@ export function AlertsProvider({ children }) {
             cancelled = true;
         };
     }, [user?.id_user]);
+
+    const createAlert = async (alertData) => {
+        const response = await apiRequest('/alerts/', {
+            method: 'POST',
+            body: JSON.stringify(alertData),
+        });
+
+        const newAlert = mapAlert(response);
+
+        setAlerts((previous) => [newAlert, ...previous]);
+
+        return newAlert;
+    };
 
     const addAlert = (newAlert) => {
         const alertWithMetadata = {
@@ -82,7 +111,6 @@ export function AlertsProvider({ children }) {
 
         if (!alert || alert.status !== 'nueva') return;
 
-        // Las alertas simuladas no existen en PostgreSQL.
         if (!alert.id_alert) {
             updateAlert(alertId, { status: 'leida' });
             return;
@@ -97,12 +125,7 @@ export function AlertsProvider({ children }) {
             setAlerts((previous) =>
                 previous.map((item) =>
                     item.id === alertId
-                        ? {
-                              ...item,
-                              ...updated,
-                              id: updated.id_alert,
-                              status: updated.leida ? 'leida' : 'nueva',
-                          }
+                        ? mapAlert(updated)
                         : item
                 )
             );
@@ -115,6 +138,7 @@ export function AlertsProvider({ children }) {
         <AlertsContext.Provider
             value={{
                 alerts,
+                createAlert,
                 addAlert,
                 updateAlert,
                 markAsRead,
@@ -138,5 +162,6 @@ export function useAlerts() {
 
     return context;
 }
+
 
 

@@ -84,7 +84,7 @@ function Users() {
 
     const statCards = [
         {
-            title: 'Usuarios registrados - PRUEBA',
+            title: 'Usuarios registrados',
             value: stats.total,
             icon: <PeopleAltOutlined />,
             color: '#38BDF8',
