@@ -72,3 +72,19 @@ def require_admin(
         )
 
     return current_user
+
+def require_regular_user(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Permite acceder a usuarios con rol 'user'.
+    Incluye planes Free y Premium.
+    """
+
+    if current_user.rol != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para acceder a esta función"
+        )
+
+    return current_user
