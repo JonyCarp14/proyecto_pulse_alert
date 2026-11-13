@@ -103,8 +103,10 @@ CREATE TABLE IF NOT EXISTS campaign_metrics_history (
 -- =========================================
 
 
+-- =========================================
 -- 6. USUARIOS DE PRUEBA
--- 1 ADMIN + 3 FREE + 2 PREMIUM
+-- 1 ADMIN + 1 FREE + 1 PREMIUM
+-- =========================================
 
 INSERT INTO usuarios (
     id_user,
@@ -123,7 +125,7 @@ VALUES
     'admin@pulsealert.com',
     'HASH_DE_PRUEBA_ADMIN',
     'admin',
-    'premium'
+    'admin'
 ),
 (
     2,
@@ -136,37 +138,10 @@ VALUES
 ),
 (
     3,
-    'Maria',
-    'Gonzalez',
-    'maria@gmail.com',
-    'HASH_DE_PRUEBA_002',
-    'user',
-    'free'
-),
-(
-    4,
-    'Lucas',
-    'Fernandez',
-    'lucas@gmail.com',
-    'HASH_DE_PRUEBA_003',
-    'user',
-    'free'
-),
-(
-    5,
     'Sofia',
     'Martinez',
     'sofia@gmail.com',
     'HASH_DE_PRUEBA_004',
-    'user',
-    'premium'
-),
-(
-    6,
-    'Nicolas',
-    'Rodriguez',
-    'nicolas@gmail.com',
-    'HASH_DE_PRUEBA_005',
     'user',
     'premium'
 );
@@ -205,10 +180,10 @@ VALUES
 ),
 (
     2,
-    3,
+    2,
     'META_TEST_002',
     'Promocion Ropa Deportiva',
-    'Cuenta Maria',
+    'Cuenta Juan',
     80000,
     45000,
     42000,
@@ -218,10 +193,10 @@ VALUES
 ),
 (
     3,
-    4,
+    2,
     'META_TEST_003',
     'Publicidad Accesorios',
-    'Cuenta Lucas',
+    'Cuenta Juan',
     30000,
     30000,
     18000,
@@ -231,7 +206,7 @@ VALUES
 ),
 (
     4,
-    5,
+    3,
     'META_TEST_004',
     'Lanzamiento Nueva Coleccion',
     'Cuenta Sofia',
@@ -244,10 +219,10 @@ VALUES
 ),
 (
     5,
-    6,
+    3,
     'META_TEST_005',
     'Descuentos Cyber Monday',
-    'Cuenta Nicolas',
+    'Cuenta Sofia',
     100000,
     115000,
     90000,
