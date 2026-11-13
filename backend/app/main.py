@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import engine
 from app.models.base import Base
@@ -18,6 +19,18 @@ from app.routes.reports import router as reports_router
 
 
 app = FastAPI(title="Pulse Alert API")
+
+# Permitir la comunicación entre React y FastAPI
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Autenticación y administración
 app.include_router(auth_router)
