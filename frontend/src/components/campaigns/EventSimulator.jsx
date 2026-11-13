@@ -5,13 +5,21 @@ import {
     ErrorOutline,
     PauseCircleOutline,
     TrendingDownOutlined,
+    WarningAmberOutlined,
 } from '@mui/icons-material';
 
 const events = [
     {
-        id: 'budget',
-        title: 'Presupuesto crítico / excedido',
-        description: 'Simula que la inversión alcanza o supera el presupuesto.',
+        id: 'budgetCritical',
+        title: 'Presupuesto crítico (90%)',
+        description: 'Simula que la inversión alcanza el 90% del presupuesto.',
+        icon: <WarningAmberOutlined />,
+        color: '#F59E0B',
+    },
+    {
+        id: 'budgetExceeded',
+        title: 'Presupuesto excedido (110%)',
+        description: 'Simula que la inversión supera el presupuesto establecido.',
         icon: <AccountBalanceWalletOutlined />,
         color: '#EF4444',
     },
@@ -39,14 +47,24 @@ const events = [
 ];
 
 function EventSimulator({ campaign, onSimulate }) {
+    const isActive = campaign.status === 'active';
+
     return (
         <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #263244' }}>
             <Typography variant="subtitle1" fontWeight="bold" mb={1}>
                 Simulador de eventos
             </Typography>
+
             <Typography variant="body2" color="text.secondary" mb={3}>
                 Ejecutá escenarios de prueba para comprobar el sistema de alertas.
             </Typography>
+
+            {!isActive && (
+                <Typography variant="body2" color="warning.main" mb={2}>
+                    Reactivá la campaña para volver a simular eventos.
+                </Typography>
+            )}
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {events.map(event => (
                     <Box
@@ -66,18 +84,22 @@ function EventSimulator({ campaign, onSimulate }) {
                             <Box sx={{ color: event.color, display: 'flex' }}>
                                 {event.icon}
                             </Box>
+
                             <Box>
                                 <Typography variant="body2" fontWeight="bold">
                                     {event.title}
                                 </Typography>
+
                                 <Typography variant="caption" color="text.secondary">
                                     {event.description}
                                 </Typography>
                             </Box>
                         </Box>
+
                         <Button
                             variant="outlined"
                             size="small"
+                            disabled={!isActive}
                             onClick={() => onSimulate?.(campaign.id, event.id)}
                             sx={{
                                 color: event.color,
@@ -95,3 +117,4 @@ function EventSimulator({ campaign, onSimulate }) {
 }
 
 export default EventSimulator;
+

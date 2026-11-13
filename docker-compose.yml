@@ -1,4 +1,5 @@
 
+
 services:
   db:
     image: postgres:15-alpine
@@ -11,12 +12,12 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/database:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-pulsealert_user} -d ${DB_NAME:-pulsealert_db}"]
       interval: 5s
       timeout: 5s
       retries: 10
-
   backend:
     build:
       context: ./backend
@@ -30,17 +31,23 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     depends_on:
       db:
         condition: service_healthy
-
   frontend:
     build:
       context: ./frontend
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - backend
-
 volumes:
   postgres_data:
+

@@ -1,27 +1,80 @@
-
-import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-
 import MainLayout from './components/layouts/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Campaigns from './pages/Campaigns';
-import { alerts as initialAlerts } from './data/dashboardData';
+import Alerts from './pages/Alerts';
+import Reports from './pages/Reports';
+import Users from './pages/Users';
+import { AuthProvider } from './context/AuthContext';
 import { AlertsProvider } from './context/AlertsContext';
-
+import { CampaignsProvider } from './context/CampaignsContext';
+import { UsersProvider } from './context/UsersContext';
 function App() {
-    const [alerts, setAlerts] = useState(initialAlerts);
-
     return (
-        <AlertsProvider>
-            <MainLayout>
-                <Routes>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/campaigns" element={<Campaigns />} />
-                </Routes>
-            </MainLayout>
-        </AlertsProvider>
+        <AuthProvider>
+            <UsersProvider>
+                <AlertsProvider>
+                    <CampaignsProvider>
+                        <Routes>
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route element={<ProtectedRoute />}>
+                                <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+                                    <Route
+                                        path="/dashboard"
+                                        element={
+                                            <MainLayout>
+                                                <Dashboard />
+                                            </MainLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/campaigns"
+                                        element={
+                                            <MainLayout>
+                                                <Campaigns />
+                                            </MainLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/alerts"
+                                        element={
+                                            <MainLayout>
+                                                <Alerts />
+                                            </MainLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/reports"
+                                        element={
+                                            <MainLayout>
+                                                <Reports />
+                                            </MainLayout>
+                                        }
+                                    />
+                                </Route>
+                                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                                    <Route
+                                        path="/users"
+                                        element={
+                                            <MainLayout>
+                                                <Users />
+                                            </MainLayout>
+                                        }
+                                    />
+                                </Route>
+                            </Route>
+                        </Routes>
+                    </CampaignsProvider>
+                </AlertsProvider>
+            </UsersProvider>
+        </AuthProvider>
     );
 }
-
 export default App;
+
+
+
+
